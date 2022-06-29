@@ -1,9 +1,7 @@
 package processador;
 
-import dto.NotaFiscalItem;
 import dto.RelatorioNF;
 import io.EscritorCSV;
-import io.LeitorCSV;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -37,7 +35,8 @@ public class ProcessadorDeArquivos {
         }
 
         for (Future<Map<String, BigDecimal>> future : futures) {
-            totaisPorDestinatario = future.get();
+            Map<String, BigDecimal> fut = future.get();
+            totaisPorDestinatario.putAll(fut);
         }
 
         threadPool.shutdown();

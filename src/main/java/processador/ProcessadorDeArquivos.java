@@ -9,9 +9,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,24 +17,30 @@ import static java.util.Objects.requireNonNull;
 
 public class ProcessadorDeArquivos {
 
-    private final LeitorCSV<NotaFiscalItem> leitor = new LeitorCSV<>();
     private final EscritorCSV escritor = new EscritorCSV();
     private final RelatorioNFConversor conversor = new RelatorioNFConversor();
+    private final List<Future<Map<String, BigDecimal>>> futures = new ArrayList<>();
 
-    public void processaArquivosDo(String diretorio) {
+    public void processaArquivosDo(String diretorio) throws ExecutionException, InterruptedException, TimeoutException {
 
         ExecutorService threadPool = Executors.newFixedThreadPool(2);
-
-        Map<String, BigDecimal> totaisPorDestinatario = new ConcurrentHashMap<>();
+        Map<String, BigDecimal> totaisPorDestinatario = new HashMap<>();
 
         Set<File> arquivos = listFilesFrom(diretorio);
 
         BarraDeProgresso barraDeProgresso = new BarraDeProgresso(arquivos.size());
 
         for (File arquivo : arquivos) {
-            LeituraParalelaArquivos leituraParalelaArquivos = new LeituraParalelaArquivos(arquivo, barraDeProgresso, totaisPorDestinatario);
-            threadPool.execute(leituraParalelaArquivos);
+            LeituraParalelaArquivos leituraParalelaArquivos = new LeituraParalelaArquivos(arquivo, barraDeProgresso);
+            Future<Map<String, BigDecimal>> futureTotal = threadPool.submit(leituraParalelaArquivos);
+            futures.add(futureTotal);
         }
+
+        for (Future<Map<String, BigDecimal>> future : futures) {
+            totaisPorDestinatario = future.get();
+        }
+
+        threadPool.shutdown();
 
         List<RelatorioNF> relatorioNFs = conversor.converte(totaisPorDestinatario);
 

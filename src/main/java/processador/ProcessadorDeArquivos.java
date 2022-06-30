@@ -21,7 +21,7 @@ public class ProcessadorDeArquivos {
 
     public void processaArquivosDo(String diretorio) throws ExecutionException, InterruptedException, TimeoutException {
 
-        ExecutorService threadPool = Executors.newFixedThreadPool(2);
+        ExecutorService threadPool = Executors.newFixedThreadPool(2, new FabricaThreads());
         Map<String, BigDecimal> totaisPorDestinatario = new HashMap<>();
 
         Set<File> arquivos = listFilesFrom(diretorio);
@@ -38,8 +38,6 @@ public class ProcessadorDeArquivos {
             Map<String, BigDecimal> fut = future.get();
             totaisPorDestinatario.putAll(fut);
         }
-
-        threadPool.shutdown();
 
         List<RelatorioNF> relatorioNFs = conversor.converte(totaisPorDestinatario);
 

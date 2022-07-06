@@ -10,8 +10,6 @@ public class Handler implements Thread.UncaughtExceptionHandler {
 
         EnviadorEmail enviador = new EnviadorEmail();
         String mensagem = "Erro na " + t.getName() + e;
-        enviador.enviaEmail("destino@gmail.com", mensagem);
-        System.out.println(mensagem);
-
+        enviador.enviaEmail(mensagem);
     }
 }

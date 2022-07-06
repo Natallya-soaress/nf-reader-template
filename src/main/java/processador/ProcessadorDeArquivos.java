@@ -35,8 +35,8 @@ public class ProcessadorDeArquivos {
         }
 
         for (Future<Map<String, BigDecimal>> future : futures) {
-            Map<String, BigDecimal> fut = future.get();
-            totaisPorDestinatario.putAll(fut);
+            Map<String, BigDecimal> totalPorDestinatarioThread = future.get();
+            totaisPorDestinatario.putAll(totalPorDestinatarioThread);
         }
 
         List<RelatorioNF> relatorioNFs = conversor.converte(totaisPorDestinatario);
